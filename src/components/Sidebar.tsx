@@ -9,6 +9,8 @@ interface SidebarProps {
   currentSessionId: string | null;
   onSelectSession: (sessionId: string, mode: Mode) => void;
   onDeleteSession: (sessionId: string, mode: Mode) => void;
+  onSelectProfile: () => void;
+  isProfileSelected: boolean;
 }
 
 export function Sidebar({
@@ -18,6 +20,8 @@ export function Sidebar({
   currentSessionId,
   onSelectSession,
   onDeleteSession,
+  onSelectProfile,
+  isProfileSelected,
 }: SidebarProps) {
   return (
     <>
@@ -48,6 +52,8 @@ export function Sidebar({
             onClose();
           }}
           onDeleteSession={onDeleteSession}
+          onSelectProfile={onSelectProfile}
+          isProfileSelected={isProfileSelected}
         />
       </div>
     </>

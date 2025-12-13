@@ -1,11 +1,13 @@
 import type { Session, Mode } from '../types/api';
-import { MessageCircle, Trash2 } from 'lucide-react';
+import { MessageCircle, Trash2, User } from 'lucide-react';
 
 interface ConversationListProps {
   sessions: Record<Mode, Session[]>;
   currentSessionId: string | null;
   onSelectSession: (sessionId: string, mode: Mode) => void;
   onDeleteSession: (sessionId: string, mode: Mode) => void;
+  onSelectProfile: () => void;
+  isProfileSelected: boolean;
 }
 
 const modeLabels: Record<Mode, string> = {
@@ -19,6 +21,8 @@ export function ConversationList({
   currentSessionId,
   onSelectSession,
   onDeleteSession,
+  onSelectProfile,
+  isProfileSelected,
 }: ConversationListProps) {
   const modes: Mode[] = ['writing', 'coding', 'math'];
 
@@ -75,8 +79,22 @@ export function ConversationList({
         ))}
       </div>
 
-      <div className="p-4 border-t border-gray-700 text-xs text-gray-500">
-        Start a new conversation to begin
+      {/* Divider */}
+      <div className="border-t border-gray-700"></div>
+
+      {/* Profile Section */}
+      <div className="p-4">
+        <button
+          onClick={onSelectProfile}
+          className={`w-full flex items-center space-x-3 px-3 py-3 rounded-lg transition-colors ${
+            isProfileSelected
+              ? 'bg-blue-600 text-white'
+              : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+          }`}
+        >
+          <User size={18} className="flex-shrink-0" />
+          <span className="text-sm font-medium">Profile & Insights</span>
+        </button>
       </div>
     </div>
   );

@@ -39,3 +39,33 @@ export interface SendMessageResponse {
 export interface GetSessionResponse {
   session: Session;
 }
+
+// Profile and Insights types
+export interface ProfileSummary {
+  overallSummary?: string;
+  perMode: {
+    writing?: string;
+    coding?: string;
+    math?: string;
+  };
+  lastUpdated?: number;
+}
+
+export interface GetProfileSummaryResponse {
+  overallSummary?: string;
+  summaries: {
+    writing?: string;
+    coding?: string;
+    math?: string;
+  };
+  lastUpdated?: number;
+}
+
+export interface EndSessionRequest {
+  sessionId: string;
+  mode: Mode;
+}
+
+export interface EndSessionResponse {
+  success: boolean;
+}

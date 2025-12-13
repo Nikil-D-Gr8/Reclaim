@@ -24,14 +24,19 @@ export function useChat() {
       setIsLoading(true);
       setError(null);
 
-      const response = await apiService.startSession(mode);
+      // TODO: Implement backend API call when backend is ready
+      // For now, create a local session for UI development
+      const sessionId = `session-${Date.now()}`;
+      const createdAt = Date.now();
+
+      // const response = await apiService.startSession(mode);
 
       const newSession: Session = {
-        id: response.sessionId,
-        mode: response.mode,
+        id: sessionId,
+        mode: mode,
         messages: [],
-        createdAt: response.createdAt,
-        updatedAt: response.createdAt,
+        createdAt: createdAt,
+        updatedAt: createdAt,
       };
 
       setSessions((prev) => ({
@@ -40,7 +45,7 @@ export function useChat() {
       }));
 
       setSelectedMode(mode);
-      setCurrentSessionId(response.sessionId);
+      setCurrentSessionId(sessionId);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to start session');
     } finally {
@@ -93,11 +98,22 @@ export function useChat() {
         setIsLoading(true);
         setError(null);
 
-        const response = await apiService.sendMessage(
-          currentSession.id,
-          selectedMode,
-          content
-        );
+        // TODO: Implement backend API call when backend is ready
+        // For now, mock assistant response for UI development
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
+
+        const assistantMessage: Message = {
+          id: `msg-${Date.now()}-assistant`,
+          role: 'assistant',
+          content: `This is a mock response for your ${selectedMode} question: "${content}". Backend integration pending.`,
+          timestamp: Date.now(),
+        };
+
+        // const response = await apiService.sendMessage(
+        //   currentSession.id,
+        //   selectedMode,
+        //   content
+        // );
 
         setSessions((prev) => ({
           ...prev,
@@ -105,7 +121,7 @@ export function useChat() {
             s.id === currentSession.id
               ? {
                   ...s,
-                  messages: [...s.messages, response.assistantMessage],
+                  messages: [...s.messages, assistantMessage],
                   updatedAt: Date.now(),
                 }
               : s
