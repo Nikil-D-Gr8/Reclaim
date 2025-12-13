@@ -1,10 +1,11 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { SendMessageRequest, SendMessageResponse, Message } from '../../src/types/api';
-import { sessionStore } from '../../server/state/SessionStore';
-import { inferIntentFromMessage, updatePhase } from '../../server/state/ConversationState';
-import { codingAgent } from '../../server/agents/CodingAgent';
-import { writingAgent } from '../../server/agents/WritingAgent';
-import { mathAgent } from '../../server/agents/MathAgent';
+import { randomUUID } from 'crypto';
+import { sessionStore } from '../../dist/server/state/SessionStore.js';
+import { inferIntentFromMessage, updatePhase } from '../../dist/server/state/ConversationState.js';
+import { codingAgent } from '../../dist/server/agents/CodingAgent.js';
+import { writingAgent } from '../../dist/server/agents/WritingAgent.js';
+import { mathAgent } from '../../dist/server/agents/MathAgent.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -27,7 +28,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // Create user message
   const userMessage: Message = {
-    id: crypto.randomUUID(),
+    id: randomUUID(),
     role: 'user',
     content,
     timestamp,
@@ -75,7 +76,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // Create assistant message from agent response
   const assistantMessage: Message = {
-    id: crypto.randomUUID(),
+    id: randomUUID(),
     role: 'assistant',
     content: agentResponse.message.content,
     timestamp: timestamp + 1, // slight offset for ordering

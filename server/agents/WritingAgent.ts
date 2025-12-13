@@ -1,8 +1,8 @@
 // Writing agent implementation with AI behavior using Gemini
 
-import { ConversationState } from '../state/ConversationState';
-import { AgentResponse } from './types';
-import { genAI, MODEL_NAME } from '../llm/gemini';
+import { ConversationState } from '../state/ConversationState.js';
+import { AgentResponse } from './types.js';
+import { genAI, MODEL_NAME } from '../llm/gemini.js';
 
 export class WritingAgent {
   private systemPrompt = `You are a writing tutor helping students improve their writing skills. Your role is to guide students through the writing process by asking questions, providing hints, and encouraging reflection rather than giving direct answers.

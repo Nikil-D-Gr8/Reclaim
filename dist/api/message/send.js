@@ -1,12 +1,9 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = handler;
-const SessionStore_1 = require("../../dist/server/state/SessionStore");
-const ConversationState_1 = require("../../dist/server/state/ConversationState");
-const CodingAgent_1 = require("../../dist/server/agents/CodingAgent");
-const WritingAgent_1 = require("../../dist/server/agents/WritingAgent");
-const MathAgent_1 = require("../../dist/server/agents/MathAgent");
-async function handler(req, res) {
+import { sessionStore } from '../../dist/server/state/SessionStore.js';
+import { inferIntentFromMessage, updatePhase } from '../../dist/server/state/ConversationState.js';
+import { codingAgent } from '../../dist/server/agents/CodingAgent.js';
+import { writingAgent } from '../../dist/server/agents/WritingAgent.js';
+import { mathAgent } from '../../dist/server/agents/MathAgent.js';
+export default async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
@@ -16,9 +13,9 @@ async function handler(req, res) {
     }
     const timestamp = Date.now();
     // Fetch or create conversation state
-    let state = SessionStore_1.sessionStore.getSession(sessionId);
+    let state = sessionStore.getSession(sessionId);
     if (!state) {
-        state = SessionStore_1.sessionStore.createSession(sessionId, mode);
+        state = sessionStore.createSession(sessionId, mode);
     }
     // Create user message
     const userMessage = {
@@ -34,27 +31,27 @@ async function handler(req, res) {
     }
     // Increment attempts and update phase
     const newAttempts = state.attempts + 1;
-    const lastIntent = (0, ConversationState_1.inferIntentFromMessage)(content);
-    const newPhase = (0, ConversationState_1.updatePhase)(newAttempts);
+    const lastIntent = inferIntentFromMessage(content);
+    const newPhase = updatePhase(newAttempts);
     // Update state
-    SessionStore_1.sessionStore.updateSession(sessionId, {
+    sessionStore.updateSession(sessionId, {
         attempts: newAttempts,
         lastIntent,
         phase: newPhase,
     });
     // Get updated state for agent
-    const updatedState = SessionStore_1.sessionStore.getSession(sessionId);
+    const updatedState = sessionStore.getSession(sessionId);
     // Select agent based on mode
     let agent;
     switch (mode) {
         case 'coding':
-            agent = CodingAgent_1.codingAgent;
+            agent = codingAgent;
             break;
         case 'writing':
-            agent = WritingAgent_1.writingAgent;
+            agent = writingAgent;
             break;
         case 'math':
-            agent = MathAgent_1.mathAgent;
+            agent = mathAgent;
             break;
         default:
             return res.status(400).json({ error: 'Invalid mode' });
@@ -75,7 +72,7 @@ async function handler(req, res) {
     }
     // Apply any state updates from agent (if provided)
     if (agentResponse.stateUpdate) {
-        SessionStore_1.sessionStore.updateSession(sessionId, agentResponse.stateUpdate);
+        sessionStore.updateSession(sessionId, agentResponse.stateUpdate);
     }
     const response = {
         message: userMessage,

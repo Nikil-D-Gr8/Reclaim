@@ -1,6 +1,6 @@
 // Agent response types and interfaces
 
-import { Message, ConversationState } from '../state/ConversationState';
+import { Message, ConversationState } from '../state/ConversationState.js';
 
 export type ResponseType =
   | "question"

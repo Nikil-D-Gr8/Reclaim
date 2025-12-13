@@ -1,7 +1,7 @@
 // In-memory session store for conversation states
 // NOTE: This is process-local and non-persistent. Sessions will be lost on server restart.
 
-import { ConversationState } from './ConversationState';
+import { ConversationState } from './ConversationState.js';
 
 class SessionStore {
   private sessions = new Map<string, ConversationState>();

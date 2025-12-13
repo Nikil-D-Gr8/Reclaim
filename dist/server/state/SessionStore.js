@@ -1,8 +1,5 @@
-"use strict";
 // In-memory session store for conversation states
 // NOTE: This is process-local and non-persistent. Sessions will be lost on server restart.
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.sessionStore = void 0;
 class SessionStore {
     constructor() {
         this.sessions = new Map();
@@ -53,4 +50,4 @@ class SessionStore {
     }
 }
 // Export singleton instance
-exports.sessionStore = new SessionStore();
+export const sessionStore = new SessionStore();

@@ -1,8 +1,8 @@
 // Coding agent implementation with AI behavior using Gemini
 
-import { ConversationState } from '../state/ConversationState';
-import { AgentResponse } from './types';
-import { genAI, MODEL_NAME } from '../llm/gemini';
+import { ConversationState } from '../state/ConversationState.js';
+import { AgentResponse } from './types.js';
+import { genAI, MODEL_NAME } from '../llm/gemini.js';
 
 export class CodingAgent {
   private systemPrompt = `You are a programming tutor helping students develop coding skills and problem-solving abilities. Your role is to guide students through programming challenges by asking questions, providing hints, and encouraging algorithmic thinking rather than giving direct code solutions.
