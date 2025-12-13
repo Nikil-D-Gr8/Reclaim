@@ -78,50 +78,24 @@ export function useChat() {
         return;
       }
 
-      const userMessage: Message = {
-        id: `msg-${Date.now()}-user`,
-        role: 'user',
-        content,
-        timestamp: Date.now(),
-      };
-
-      setSessions((prev) => ({
-        ...prev,
-        [selectedMode]: prev[selectedMode].map((s) =>
-          s.id === currentSession.id
-            ? { ...s, messages: [...s.messages, userMessage], updatedAt: Date.now() }
-            : s
-        ),
-      }));
-
       try {
         setIsLoading(true);
         setError(null);
 
-        // TODO: Implement backend API call when backend is ready
-        // For now, mock assistant response for UI development
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
+        const response = await apiService.sendMessage(
+          currentSession.id,
+          selectedMode,
+          content
+        );
 
-        const assistantMessage: Message = {
-          id: `msg-${Date.now()}-assistant`,
-          role: 'assistant',
-          content: `This is a mock response for your ${selectedMode} question: "${content}". Backend integration pending.`,
-          timestamp: Date.now(),
-        };
-
-        // const response = await apiService.sendMessage(
-        //   currentSession.id,
-        //   selectedMode,
-        //   content
-        // );
-
+        // Update session with the new messages from the API response
         setSessions((prev) => ({
           ...prev,
           [selectedMode]: prev[selectedMode].map((s) =>
             s.id === currentSession.id
               ? {
                   ...s,
-                  messages: [...s.messages, assistantMessage],
+                  messages: [...s.messages, response.message, response.assistantMessage],
                   updatedAt: Date.now(),
                 }
               : s
