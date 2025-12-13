@@ -3,6 +3,8 @@ import { SendMessageRequest, SendMessageResponse, Message } from '../../src/type
 import { sessionStore } from '../../server/state/SessionStore';
 import { inferIntentFromMessage, updatePhase } from '../../server/state/ConversationState';
 import { codingAgent } from '../../server/agents/CodingAgent';
+import { writingAgent } from '../../server/agents/WritingAgent';
+import { mathAgent } from '../../server/agents/MathAgent';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -52,8 +54,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Get updated state for agent
   const updatedState = sessionStore.getSession(sessionId)!;
 
+  // Select agent based on mode
+  let agent;
+  switch (mode) {
+    case 'coding':
+      agent = codingAgent;
+      break;
+    case 'writing':
+      agent = writingAgent;
+      break;
+    case 'math':
+      agent = mathAgent;
+      break;
+    default:
+      return res.status(400).json({ error: 'Invalid mode' });
+  }
+
   // Call agent to generate response
-  const agentResponse = codingAgent.respond(updatedState);
+  const agentResponse = await agent.respond(updatedState);
 
   // Create assistant message from agent response
   const assistantMessage: Message = {

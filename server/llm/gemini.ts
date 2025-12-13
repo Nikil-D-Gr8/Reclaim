@@ -1,12 +1,19 @@
 // Gemini LLM client setup
-// TODO: Replace DUMMY_API_KEY with real environment variable
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { config } from 'dotenv';
 
-// DUMMY API KEY - Replace with process.env.GOOGLE_GEMINI_API_KEY
-const DUMMY_API_KEY = 'dummy-api-key-for-development-only';
+// Load environment variables
+config();
 
-export const genAI = new GoogleGenerativeAI(DUMMY_API_KEY);
+const apiKey = process.env.GOOGLE_GEMINI_API_KEY;
+if (!apiKey) {
+  throw new Error('GOOGLE_GEMINI_API_KEY environment variable is required');
+}
+
+export const genAI = new GoogleGenerativeAI(apiKey);
+
+export const MODEL_NAME = process.env.GOOGLE_GEMINI_MODEL || 'gemini-pro';
 
 // TODO: Implement actual Gemini calls when ready
 // Example usage (not implemented yet):
