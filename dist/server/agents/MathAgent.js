@@ -46,7 +46,7 @@ Keep responses concise, mathematically accurate, and focused on developing mathe
         prompt += `- Last intent: ${state.lastIntent || 'unknown'}\n\n`;
         prompt += `INSTRUCTIONS:\n`;
         prompt += `Respond as a mathematics tutor. Provide ONE response message.\n`;
-        prompt += `Format your response as JSON with this exact structure:\n`;
+        prompt += `Return ONLY valid JSON with this exact structure, no additional text, markdown, or formatting:\n`;
         prompt += `{\n`;
         prompt += `  "message": {\n`;
         prompt += `    "role": "assistant",\n`;
@@ -70,20 +70,48 @@ Keep responses concise, mathematically accurate, and focused on developing mathe
         }
         try {
             const model = genAI.getGenerativeModel({ model: MODEL_NAME });
-            const result = await model.generateContent(prompt);
+            // Prepare chat history for Gemini
+            const history = messages.slice(-10).map(msg => ({
+                role: msg.role === 'assistant' ? 'model' : 'user',
+                parts: [{ text: msg.content }],
+            }));
+            // Create chat session with history
+            const chat = model.startChat({
+                history,
+                generationConfig: {
+                    temperature: 0.7,
+                    maxOutputTokens: 1000,
+                },
+            });
+            // Send the current prompt as the new message
+            const result = await chat.sendMessage(prompt);
             const response = await result.response;
             const text = response.text();
             // Parse the JSON response
-            const parsedResponse = JSON.parse(text.trim());
+            console.log('MathAgent AI response:', text);
+            let cleanedText = text.trim();
+            // Remove markdown code block formatting if present
+            if (cleanedText.startsWith('```')) {
+                cleanedText = cleanedText.replace(/^```(?:json)?\s*/, '');
+                const closingIndex = cleanedText.lastIndexOf('```');
+                if (closingIndex !== -1) {
+                    cleanedText = cleanedText.substring(0, closingIndex).trim();
+                }
+            }
+            const parsedResponse = JSON.parse(cleanedText);
             return parsedResponse;
         }
         catch (error) {
             console.error('MathAgent AI error:', error);
-            // Fallback response
+            // Fallback response that acknowledges conversation history
+            let fallbackContent = 'I\'m here to help you with mathematics. What mathematical problem or concept are you working on?';
+            if (attempts > 0) {
+                fallbackContent = 'I see you\'re continuing our math discussion. Could you tell me more about what you\'re working on or what help you need?';
+            }
             return {
                 message: {
                     role: 'assistant',
-                    content: 'I\'m here to help you with mathematics. What mathematical problem or concept are you working on?',
+                    content: fallbackContent,
                     type: 'question',
                 },
             };

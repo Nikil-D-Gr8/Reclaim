@@ -46,7 +46,7 @@ Keep responses concise, technically accurate, and focused on developing programm
         prompt += `- Last intent: ${state.lastIntent || 'unknown'}\n\n`;
         prompt += `INSTRUCTIONS:\n`;
         prompt += `Respond as a programming tutor. Provide ONE response message.\n`;
-        prompt += `Format your response as JSON with this exact structure:\n`;
+        prompt += `Return ONLY valid JSON with this exact structure, no additional text, markdown, or formatting:\n`;
         prompt += `{\n`;
         prompt += `  "message": {\n`;
         prompt += `    "role": "assistant",\n`;
@@ -74,7 +74,17 @@ Keep responses concise, technically accurate, and focused on developing programm
             const response = await result.response;
             const text = response.text();
             // Parse the JSON response
-            const parsedResponse = JSON.parse(text.trim());
+            console.log('CodingAgent AI response:', text);
+            let cleanedText = text.trim();
+            // Remove markdown code block formatting if present
+            if (cleanedText.startsWith('```')) {
+                cleanedText = cleanedText.replace(/^```(?:json)?\s*/, '');
+                const closingIndex = cleanedText.lastIndexOf('```');
+                if (closingIndex !== -1) {
+                    cleanedText = cleanedText.substring(0, closingIndex).trim();
+                }
+            }
+            const parsedResponse = JSON.parse(cleanedText);
             return parsedResponse;
         }
         catch (error) {

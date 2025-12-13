@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { sessionStore } from '../../dist/server/state/SessionStore.js';
 import { inferIntentFromMessage, updatePhase } from '../../dist/server/state/ConversationState.js';
 import { codingAgent } from '../../dist/server/agents/CodingAgent.js';
@@ -19,7 +20,7 @@ export default async function handler(req, res) {
     }
     // Create user message
     const userMessage = {
-        id: crypto.randomUUID(),
+        id: randomUUID(),
         role: 'user',
         content,
         timestamp,
@@ -60,7 +61,7 @@ export default async function handler(req, res) {
     const agentResponse = await agent.respond(updatedState);
     // Create assistant message from agent response
     const assistantMessage = {
-        id: crypto.randomUUID(),
+        id: randomUUID(),
         role: 'assistant',
         content: agentResponse.message.content,
         timestamp: timestamp + 1, // slight offset for ordering
