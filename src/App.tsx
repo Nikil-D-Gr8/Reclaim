@@ -57,6 +57,7 @@ function App() {
         currentSessionId={currentSessionId}
         onSelectSession={handleSelectSession}
         onDeleteSession={deleteSession}
+        onStartNewSession={startNewSession}
         onSelectProfile={handleSelectProfile}
         isProfileSelected={profileViewActive}
       />

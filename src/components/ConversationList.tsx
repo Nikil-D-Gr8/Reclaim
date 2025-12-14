@@ -1,11 +1,12 @@
 import type { Session, Mode } from '../types/api';
-import { MessageCircle, Trash2, User } from 'lucide-react';
+import { MessageCircle, Trash2, User, Plus } from 'lucide-react';
 
 interface ConversationListProps {
   sessions: Record<Mode, Session[]>;
   currentSessionId: string | null;
   onSelectSession: (sessionId: string, mode: Mode) => void;
   onDeleteSession: (sessionId: string, mode: Mode) => void;
+  onStartNewSession: (mode: Mode) => void;
   onSelectProfile: () => void;
   isProfileSelected: boolean;
 }
@@ -21,6 +22,7 @@ export function ConversationList({
   currentSessionId,
   onSelectSession,
   onDeleteSession,
+  onStartNewSession,
   onSelectProfile,
   isProfileSelected,
 }: ConversationListProps) {
@@ -35,8 +37,17 @@ export function ConversationList({
       <div className="flex-1 overflow-y-auto">
         {modes.map((mode) => (
           <div key={mode}>
-            <div className="px-4 py-2 mt-4 text-xs font-semibold uppercase text-gray-400">
-              {modeLabels[mode]}
+            <div className="flex items-center justify-between px-4 py-2 mt-4">
+              <span className="text-xs font-semibold uppercase text-gray-400">
+                {modeLabels[mode]}
+              </span>
+              <button
+                onClick={() => onStartNewSession(mode)}
+                className="p-1 hover:bg-gray-800 rounded transition-colors"
+                title={`Start new ${modeLabels[mode]} conversation`}
+              >
+                <Plus size={14} />
+              </button>
             </div>
 
             {sessions[mode]?.length === 0 ? (
