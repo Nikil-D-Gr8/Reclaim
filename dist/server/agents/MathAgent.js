@@ -34,7 +34,6 @@ Keep responses concise, mathematically accurate, and focused on developing mathe
         const phase = state.phase;
         // Build context from conversation history
         const conversationContext = messages
-            .slice(-10) // Last 10 messages for context
             .map(msg => `${msg.role}: ${msg.content}`)
             .join('\n');
         // Create prompt based on attempt count and phase
@@ -71,10 +70,12 @@ Keep responses concise, mathematically accurate, and focused on developing mathe
         try {
             const model = genAI.getGenerativeModel({ model: MODEL_NAME });
             // Prepare chat history for Gemini
-            const history = messages.slice(-10).map(msg => ({
+            const history = messages.map(msg => ({
                 role: msg.role === 'assistant' ? 'model' : 'user',
                 parts: [{ text: msg.content }],
             }));
+            console.log('MathAgent sending to AI - history:', history.map(h => `${h.role}: ${h.parts[0].text}`).join('\n'));
+            console.log('MathAgent sending to AI - prompt:', prompt);
             // Create chat session with history
             const chat = model.startChat({
                 history,

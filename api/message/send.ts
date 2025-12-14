@@ -21,9 +21,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const timestamp = Date.now();
 
   // Fetch or create conversation state
-  let state = sessionStore.getSession(sessionId);
+  let state = await sessionStore.getSession(sessionId);
   if (!state) {
-    state = sessionStore.createSession(sessionId, mode);
+    console.log(`Creating new session: ${sessionId} for mode: ${mode}`);
+    state = await sessionStore.createSession(sessionId, mode);
+  } else {
+    console.log(`Found existing session: ${sessionId} with ${state.messages.length} messages`);
   }
 
   // Create user message
@@ -46,14 +49,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const newPhase = updatePhase(newAttempts);
 
   // Update state
-  sessionStore.updateSession(sessionId, {
+  await sessionStore.updateSession(sessionId, {
     attempts: newAttempts,
     lastIntent,
     phase: newPhase,
   });
 
   // Get updated state for agent
-  const updatedState = sessionStore.getSession(sessionId)!;
+  const updatedState = await sessionStore.getSession(sessionId);
 
   // Select agent based on mode
   let agent;
@@ -90,7 +93,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // Apply any state updates from agent (if provided)
   if (agentResponse.stateUpdate) {
-    sessionStore.updateSession(sessionId, agentResponse.stateUpdate);
+    await sessionStore.updateSession(sessionId, agentResponse.stateUpdate);
   }
 
   const response: SendMessageResponse = {

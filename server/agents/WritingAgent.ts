@@ -38,7 +38,6 @@ Keep responses concise, supportive, and focused on developing writing skills.`;
 
     // Build context from conversation history
     const conversationContext = messages
-      .slice(-10) // Last 10 messages for context
       .map(msg => `${msg.role}: ${msg.content}`)
       .join('\n');
 
@@ -74,6 +73,7 @@ Keep responses concise, supportive, and focused on developing writing skills.`;
     }
 
     try {
+      console.log('WritingAgent sending to AI:', prompt);
       const model = genAI.getGenerativeModel({ model: MODEL_NAME });
       const result = await model.generateContent(prompt);
       const response = await result.response;
