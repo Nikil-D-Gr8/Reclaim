@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { ProfileSummary, RecentPattern } from '../types/api';
 import { User, BookOpen, Code, Calculator, TrendingUp, RefreshCw } from 'lucide-react';
 import { apiService } from '../services/api';
+import ReactMarkdown from 'react-markdown';
 
 interface ProfileInsightsProps {
   summaries: ProfileSummary;
@@ -95,7 +96,9 @@ export function ProfileInsights({ summaries }: ProfileInsightsProps) {
             )}
           </div>
           {overallSummary ? (
-            <p className="text-gray-700 leading-relaxed">{overallSummary}</p>
+            <div className="text-gray-700 leading-relaxed prose prose-sm max-w-none">
+              <ReactMarkdown>{overallSummary}</ReactMarkdown>
+            </div>
           ) : (
             <div className="text-center py-8">
               <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
@@ -125,7 +128,9 @@ export function ProfileInsights({ summaries }: ProfileInsightsProps) {
                     </h3>
                   </div>
                   {summary ? (
-                    <p className="text-gray-700 text-sm leading-relaxed">{summary}</p>
+                    <div className="text-gray-700 text-sm leading-relaxed prose prose-xs max-w-none">
+                      <ReactMarkdown>{summary}</ReactMarkdown>
+                    </div>
                   ) : (
                     <p className="text-gray-500 text-sm italic">
                       No summary available for {modeLabels[mode].toLowerCase()} yet.
@@ -170,7 +175,9 @@ export function ProfileInsights({ summaries }: ProfileInsightsProps) {
                     <div key={`${pattern.sessionId}-${index}`} className="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg">
                       <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
                       <div className="flex-1">
-                        <p className="text-gray-700 text-sm leading-relaxed">{pattern.pattern}</p>
+                        <div className="text-gray-700 text-sm leading-relaxed prose prose-xs max-w-none">
+                          <ReactMarkdown>{pattern.pattern}</ReactMarkdown>
+                        </div>
                         <p className="text-xs text-gray-500 mt-1">
                           {modeLabels[pattern.mode]} • {new Date(pattern.createdAt).toLocaleDateString()}
                         </p>
