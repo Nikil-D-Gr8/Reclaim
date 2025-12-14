@@ -5,35 +5,42 @@ import path from 'path';
 import { SessionSummary, SubjectMetrics, RecentPattern, Mode } from '../../src/types/api';
 
 class InsightsStore {
-  private sessionSummaries = new Map<string, SessionSummary>();
-  private subjectMetrics = new Map<Mode, SubjectMetrics>();
-  private recentPatterns: RecentPattern[] = [];
   private storageFile = path.join(process.cwd(), 'insights.json');
-  private initialized = false;
 
-  private async ensureInitialized() {
-    if (this.initialized) return;
-
+  private async loadData(): Promise<{
+    sessionSummaries: Map<string, SessionSummary>;
+    subjectMetrics: Map<Mode, SubjectMetrics>;
+    recentPatterns: RecentPattern[];
+  }> {
     try {
       const data = await fs.readFile(this.storageFile, 'utf8');
       const insightsData = JSON.parse(data);
-      this.sessionSummaries = new Map(Object.entries(insightsData.sessionSummaries || {}));
-      this.subjectMetrics = new Map(Object.entries(insightsData.subjectMetrics || {}).map(([k, v]) => [k as Mode, v as SubjectMetrics]));
-      this.recentPatterns = insightsData.recentPatterns || [];
+      return {
+        sessionSummaries: new Map(Object.entries(insightsData.sessionSummaries || {})),
+        subjectMetrics: new Map(Object.entries(insightsData.subjectMetrics || {}).map(([k, v]) => [k as Mode, v as SubjectMetrics])),
+        recentPatterns: insightsData.recentPatterns || [],
+      };
     } catch (error) {
       // File doesn't exist or is corrupted, start with empty data
       console.log('No existing insights file found, starting fresh');
+      return {
+        sessionSummaries: new Map(),
+        subjectMetrics: new Map(),
+        recentPatterns: [],
+      };
     }
-
-    this.initialized = true;
   }
 
-  private async saveToFile() {
+  private async saveData(data: {
+    sessionSummaries: Map<string, SessionSummary>;
+    subjectMetrics: Map<Mode, SubjectMetrics>;
+    recentPatterns: RecentPattern[];
+  }): Promise<void> {
     try {
       const insightsData = {
-        sessionSummaries: Object.fromEntries(this.sessionSummaries),
-        subjectMetrics: Object.fromEntries(this.subjectMetrics),
-        recentPatterns: this.recentPatterns,
+        sessionSummaries: Object.fromEntries(data.sessionSummaries),
+        subjectMetrics: Object.fromEntries(data.subjectMetrics),
+        recentPatterns: data.recentPatterns,
       };
       await fs.writeFile(this.storageFile, JSON.stringify(insightsData, null, 2));
     } catch (error) {
@@ -45,14 +52,15 @@ class InsightsStore {
    * Stores a new session summary
    */
   async saveSessionSummary(summary: SessionSummary): Promise<void> {
-    await this.ensureInitialized();
-    this.sessionSummaries.set(summary.sessionId, summary);
+    const data = await this.loadData();
+
+    data.sessionSummaries.set(summary.sessionId, summary);
 
     // Update subject metrics
-    await this.updateSubjectMetrics(summary);
+    await this.updateSubjectMetrics(data, summary);
 
     // Add to recent patterns
-    this.recentPatterns.unshift({
+    data.recentPatterns.unshift({
       sessionId: summary.sessionId,
       mode: summary.mode,
       pattern: summary.patternsObserved,
@@ -60,19 +68,23 @@ class InsightsStore {
     });
 
     // Keep only last 50 patterns
-    if (this.recentPatterns.length > 50) {
-      this.recentPatterns = this.recentPatterns.slice(0, 50);
+    if (data.recentPatterns.length > 50) {
+      data.recentPatterns = data.recentPatterns.slice(0, 50);
     }
 
-    await this.saveToFile();
+    await this.saveData(data);
   }
 
   /**
    * Updates subject metrics when a new session summary is added
    */
-  private async updateSubjectMetrics(summary: SessionSummary): Promise<void> {
+  private async updateSubjectMetrics(data: {
+    sessionSummaries: Map<string, SessionSummary>;
+    subjectMetrics: Map<Mode, SubjectMetrics>;
+    recentPatterns: RecentPattern[];
+  }, summary: SessionSummary): Promise<void> {
     const mode = summary.mode;
-    let metrics = this.subjectMetrics.get(mode);
+    let metrics = data.subjectMetrics.get(mode);
 
     if (!metrics) {
       metrics = {
@@ -102,33 +114,33 @@ class InsightsStore {
     metrics.aggregatedSummary = `Strengths observed: ${allStrengths.substring(0, 200)}... Weaknesses observed: ${allWeaknesses.substring(0, 200)}...`;
     metrics.lastUpdated = Date.now();
 
-    this.subjectMetrics.set(mode, metrics);
+    data.subjectMetrics.set(mode, metrics);
   }
 
   /**
    * Gets session summary by session ID
    */
   async getSessionSummary(sessionId: string): Promise<SessionSummary | undefined> {
-    await this.ensureInitialized();
-    return this.sessionSummaries.get(sessionId);
+    const data = await this.loadData();
+    return data.sessionSummaries.get(sessionId);
   }
 
   /**
    * Gets subject metrics for a mode
    */
   async getSubjectMetrics(mode: Mode): Promise<SubjectMetrics | undefined> {
-    await this.ensureInitialized();
-    return this.subjectMetrics.get(mode);
+    const data = await this.loadData();
+    return data.subjectMetrics.get(mode);
   }
 
   /**
    * Gets all subject metrics
    */
   async getAllSubjectMetrics(): Promise<Record<Mode, SubjectMetrics>> {
-    await this.ensureInitialized();
+    const data = await this.loadData();
     const result: Record<Mode, SubjectMetrics> = {} as Record<Mode, SubjectMetrics>;
     for (const mode of ['writing', 'coding', 'math'] as Mode[]) {
-      const metrics = this.subjectMetrics.get(mode);
+      const metrics = data.subjectMetrics.get(mode);
       if (metrics) {
         result[mode] = metrics;
       }
@@ -140,16 +152,16 @@ class InsightsStore {
    * Gets recent patterns (last 20)
    */
   async getRecentPatterns(limit: number = 20): Promise<RecentPattern[]> {
-    await this.ensureInitialized();
-    return this.recentPatterns.slice(0, limit);
+    const data = await this.loadData();
+    return data.recentPatterns.slice(0, limit);
   }
 
   /**
    * Gets all session summaries
    */
   async getAllSessionSummaries(): Promise<SessionSummary[]> {
-    await this.ensureInitialized();
-    return Array.from(this.sessionSummaries.values());
+    const data = await this.loadData();
+    return Array.from(data.sessionSummaries.values());
   }
 }
 

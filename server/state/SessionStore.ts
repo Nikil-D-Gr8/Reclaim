@@ -41,12 +41,7 @@ class SessionStore {
    */
   async getSession(sessionId: string): Promise<ConversationState | undefined> {
     await this.ensureInitialized();
-    const session = this.sessions.get(sessionId);
-    console.log(`SessionStore.getSession: Looking for ${sessionId}, found: ${!!session}`);
-    if (session) {
-      console.log(`Session has ${session.messages.length} messages`);
-    }
-    return session;
+    return this.sessions.get(sessionId);
   }
 
   /**
@@ -104,6 +99,20 @@ class SessionStore {
   async getActiveSessions(): Promise<string[]> {
     await this.ensureInitialized();
     return Array.from(this.sessions.keys());
+  }
+
+  /**
+   * Gets session IDs by status
+   */
+  async getSessionsByStatus(status: 'active' | 'summarizing' | 'completed'): Promise<string[]> {
+    await this.ensureInitialized();
+    const result: string[] = [];
+    for (const [sessionId, session] of this.sessions) {
+      if (session.status === status) {
+        result.push(sessionId);
+      }
+    }
+    return result;
   }
 }
 

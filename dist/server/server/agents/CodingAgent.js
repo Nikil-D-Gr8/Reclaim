@@ -1,9 +1,6 @@
-"use strict";
 // Coding agent implementation with AI behavior using Gemini
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.codingAgent = exports.CodingAgent = void 0;
-const gemini_js_1 = require("../llm/gemini.js");
-class CodingAgent {
+import { genAI, MODEL_NAME } from '../llm/gemini.js';
+export class CodingAgent {
     constructor() {
         this.systemPrompt = `You are a programming tutor helping students develop coding skills and problem-solving abilities. Your role is to guide students through programming challenges by asking questions, providing hints, and encouraging algorithmic thinking rather than giving direct code solutions.
 
@@ -72,7 +69,7 @@ Keep responses concise, technically accurate, and focused on developing programm
         }
         try {
             console.log('CodingAgent sending to AI:', prompt);
-            const model = gemini_js_1.genAI.getGenerativeModel({ model: gemini_js_1.MODEL_NAME });
+            const model = genAI.getGenerativeModel({ model: MODEL_NAME });
             const result = await model.generateContent(prompt);
             const response = await result.response;
             const text = response.text();
@@ -103,6 +100,5 @@ Keep responses concise, technically accurate, and focused on developing programm
         }
     }
 }
-exports.CodingAgent = CodingAgent;
 // Export singleton instance
-exports.codingAgent = new CodingAgent();
+export const codingAgent = new CodingAgent();

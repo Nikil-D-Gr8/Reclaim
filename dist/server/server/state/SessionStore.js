@@ -1,24 +1,18 @@
-"use strict";
 // Session store with file-based persistence for development
 // NOTE: In production, this should use a proper database
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.sessionStore = void 0;
-const fs_1 = require("fs");
-const path_1 = __importDefault(require("path"));
+import { promises as fs } from 'fs';
+import path from 'path';
 class SessionStore {
     constructor() {
         this.sessions = new Map();
-        this.storageFile = path_1.default.join(process.cwd(), 'sessions.json');
+        this.storageFile = path.join(process.cwd(), 'sessions.json');
         this.initialized = false;
     }
     async ensureInitialized() {
         if (this.initialized)
             return;
         try {
-            const data = await fs_1.promises.readFile(this.storageFile, 'utf8');
+            const data = await fs.readFile(this.storageFile, 'utf8');
             const sessionsData = JSON.parse(data);
             for (const [sessionId, state] of Object.entries(sessionsData)) {
                 this.sessions.set(sessionId, state);
@@ -33,7 +27,7 @@ class SessionStore {
     async saveToFile() {
         try {
             const sessionsData = Object.fromEntries(this.sessions);
-            await fs_1.promises.writeFile(this.storageFile, JSON.stringify(sessionsData, null, 2));
+            await fs.writeFile(this.storageFile, JSON.stringify(sessionsData, null, 2));
         }
         catch (error) {
             console.error('Failed to save sessions to file:', error);
@@ -44,12 +38,7 @@ class SessionStore {
      */
     async getSession(sessionId) {
         await this.ensureInitialized();
-        const session = this.sessions.get(sessionId);
-        console.log(`SessionStore.getSession: Looking for ${sessionId}, found: ${!!session}`);
-        if (session) {
-            console.log(`Session has ${session.messages.length} messages`);
-        }
-        return session;
+        return this.sessions.get(sessionId);
     }
     /**
      * Creates a new session with initial state
@@ -99,6 +88,19 @@ class SessionStore {
         await this.ensureInitialized();
         return Array.from(this.sessions.keys());
     }
+    /**
+     * Gets session IDs by status
+     */
+    async getSessionsByStatus(status) {
+        await this.ensureInitialized();
+        const result = [];
+        for (const [sessionId, session] of this.sessions) {
+            if (session.status === status) {
+                result.push(sessionId);
+            }
+        }
+        return result;
+    }
 }
 // Export singleton instance
-exports.sessionStore = new SessionStore();
+export const sessionStore = new SessionStore();

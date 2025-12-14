@@ -1,11 +1,11 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { SendMessageRequest, SendMessageResponse, Message } from '../../src/types/api';
 import { randomUUID } from 'crypto';
-import { sessionStore } from '../../dist/server/state/SessionStore.js';
-import { inferIntentFromMessage, updatePhase } from '../../dist/server/state/ConversationState.js';
-import { codingAgent } from '../../dist/server/agents/CodingAgent.js';
-import { writingAgent } from '../../dist/server/agents/WritingAgent.js';
-import { mathAgent } from '../../dist/server/agents/MathAgent.js';
+import { sessionStore } from '../../dist/server/server/state/SessionStore.js';
+import { inferIntentFromMessage, updatePhase } from '../../dist/server/server/state/ConversationState.js';
+import { codingAgent } from '../../dist/server/server/agents/CodingAgent.js';
+import { writingAgent } from '../../dist/server/server/agents/WritingAgent.js';
+import { mathAgent } from '../../dist/server/server/agents/MathAgent.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {

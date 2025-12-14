@@ -1,9 +1,6 @@
-"use strict";
 // Writing agent implementation with AI behavior using Gemini
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.writingAgent = exports.WritingAgent = void 0;
-const gemini_js_1 = require("../llm/gemini.js");
-class WritingAgent {
+import { genAI, MODEL_NAME } from '../llm/gemini.js';
+export class WritingAgent {
     constructor() {
         this.systemPrompt = `You are a writing tutor helping students improve their writing skills. Your role is to guide students through the writing process by asking questions, providing hints, and encouraging reflection rather than giving direct answers.
 
@@ -72,7 +69,7 @@ Keep responses concise, supportive, and focused on developing writing skills.`;
         }
         try {
             console.log('WritingAgent sending to AI:', prompt);
-            const model = gemini_js_1.genAI.getGenerativeModel({ model: gemini_js_1.MODEL_NAME });
+            const model = genAI.getGenerativeModel({ model: MODEL_NAME });
             const result = await model.generateContent(prompt);
             const response = await result.response;
             const text = response.text();
@@ -103,6 +100,5 @@ Keep responses concise, supportive, and focused on developing writing skills.`;
         }
     }
 }
-exports.WritingAgent = WritingAgent;
 // Export singleton instance
-exports.writingAgent = new WritingAgent();
+export const writingAgent = new WritingAgent();

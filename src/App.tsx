@@ -38,7 +38,9 @@ function App() {
   } = useChat();
 
   const handleSelectProfile = () => {
+    console.log('🎯 APP: handleSelectProfile called');
     setProfileViewActive(true);
+    console.log('🎯 APP: profileViewActive set to true');
     setSidebarOpen(false);
   };
 
@@ -100,7 +102,10 @@ function App() {
           )}
 
           {profileViewActive ? (
-            <ProfileInsights summaries={summaries} />
+            <>
+              {console.log('🎯 APP: Rendering ProfileInsights component')}
+              <ProfileInsights summaries={summaries} />
+            </>
           ) : (
             <>
               <ChatArea messages={messages} isLoading={isLoading} />

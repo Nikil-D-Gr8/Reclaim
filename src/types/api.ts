@@ -15,6 +15,7 @@ export interface Session {
   updatedAt: number;
   status?: 'active' | 'summarizing' | 'completed';
   kestraExecutionId?: string;
+  kestraWebhookUrl?: string;
 }
 
 export interface StartSessionRequest {

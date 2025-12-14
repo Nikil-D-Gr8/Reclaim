@@ -1,9 +1,6 @@
-"use strict";
 // Math agent implementation with AI behavior using Gemini
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.mathAgent = exports.MathAgent = void 0;
-const gemini_js_1 = require("../llm/gemini.js");
-class MathAgent {
+import { genAI, MODEL_NAME } from '../llm/gemini.js';
+export class MathAgent {
     constructor() {
         this.systemPrompt = `You are a mathematics tutor helping students develop problem-solving skills and mathematical understanding. Your role is to guide students through mathematical reasoning by asking questions, providing hints, and encouraging conceptual understanding rather than giving direct answers.
 
@@ -71,7 +68,7 @@ Keep responses concise, mathematically accurate, and focused on developing mathe
             prompt += `STRATEGY: They've had multiple attempts. Encourage reviewing fundamental mathematical concepts.\n`;
         }
         try {
-            const model = gemini_js_1.genAI.getGenerativeModel({ model: gemini_js_1.MODEL_NAME });
+            const model = genAI.getGenerativeModel({ model: MODEL_NAME });
             // Prepare chat history for Gemini
             const history = messages.map(msg => ({
                 role: msg.role === 'assistant' ? 'model' : 'user',
@@ -122,6 +119,5 @@ Keep responses concise, mathematically accurate, and focused on developing mathe
         }
     }
 }
-exports.MathAgent = MathAgent;
 // Export singleton instance
-exports.mathAgent = new MathAgent();
+export const mathAgent = new MathAgent();

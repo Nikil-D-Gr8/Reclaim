@@ -1,44 +1,38 @@
-"use strict";
 // Insights store for managing session summaries, subject metrics, and recent patterns
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.insightsStore = void 0;
-const fs_1 = require("fs");
-const path_1 = __importDefault(require("path"));
+import { promises as fs } from 'fs';
+import path from 'path';
 class InsightsStore {
     constructor() {
-        this.sessionSummaries = new Map();
-        this.subjectMetrics = new Map();
-        this.recentPatterns = [];
-        this.storageFile = path_1.default.join(process.cwd(), 'insights.json');
-        this.initialized = false;
+        this.storageFile = path.join(process.cwd(), 'insights.json');
     }
-    async ensureInitialized() {
-        if (this.initialized)
-            return;
+    async loadData() {
         try {
-            const data = await fs_1.promises.readFile(this.storageFile, 'utf8');
+            const data = await fs.readFile(this.storageFile, 'utf8');
             const insightsData = JSON.parse(data);
-            this.sessionSummaries = new Map(Object.entries(insightsData.sessionSummaries || {}));
-            this.subjectMetrics = new Map(Object.entries(insightsData.subjectMetrics || {}).map(([k, v]) => [k, v]));
-            this.recentPatterns = insightsData.recentPatterns || [];
+            return {
+                sessionSummaries: new Map(Object.entries(insightsData.sessionSummaries || {})),
+                subjectMetrics: new Map(Object.entries(insightsData.subjectMetrics || {}).map(([k, v]) => [k, v])),
+                recentPatterns: insightsData.recentPatterns || [],
+            };
         }
         catch (error) {
             // File doesn't exist or is corrupted, start with empty data
             console.log('No existing insights file found, starting fresh');
+            return {
+                sessionSummaries: new Map(),
+                subjectMetrics: new Map(),
+                recentPatterns: [],
+            };
         }
-        this.initialized = true;
     }
-    async saveToFile() {
+    async saveData(data) {
         try {
             const insightsData = {
-                sessionSummaries: Object.fromEntries(this.sessionSummaries),
-                subjectMetrics: Object.fromEntries(this.subjectMetrics),
-                recentPatterns: this.recentPatterns,
+                sessionSummaries: Object.fromEntries(data.sessionSummaries),
+                subjectMetrics: Object.fromEntries(data.subjectMetrics),
+                recentPatterns: data.recentPatterns,
             };
-            await fs_1.promises.writeFile(this.storageFile, JSON.stringify(insightsData, null, 2));
+            await fs.writeFile(this.storageFile, JSON.stringify(insightsData, null, 2));
         }
         catch (error) {
             console.error('Failed to save insights to file:', error);
@@ -48,29 +42,29 @@ class InsightsStore {
      * Stores a new session summary
      */
     async saveSessionSummary(summary) {
-        await this.ensureInitialized();
-        this.sessionSummaries.set(summary.sessionId, summary);
+        const data = await this.loadData();
+        data.sessionSummaries.set(summary.sessionId, summary);
         // Update subject metrics
-        await this.updateSubjectMetrics(summary);
+        await this.updateSubjectMetrics(data, summary);
         // Add to recent patterns
-        this.recentPatterns.unshift({
+        data.recentPatterns.unshift({
             sessionId: summary.sessionId,
             mode: summary.mode,
             pattern: summary.patternsObserved,
             createdAt: summary.createdAt,
         });
         // Keep only last 50 patterns
-        if (this.recentPatterns.length > 50) {
-            this.recentPatterns = this.recentPatterns.slice(0, 50);
+        if (data.recentPatterns.length > 50) {
+            data.recentPatterns = data.recentPatterns.slice(0, 50);
         }
-        await this.saveToFile();
+        await this.saveData(data);
     }
     /**
      * Updates subject metrics when a new session summary is added
      */
-    async updateSubjectMetrics(summary) {
+    async updateSubjectMetrics(data, summary) {
         const mode = summary.mode;
-        let metrics = this.subjectMetrics.get(mode);
+        let metrics = data.subjectMetrics.get(mode);
         if (!metrics) {
             metrics = {
                 mode,
@@ -95,30 +89,30 @@ class InsightsStore {
         const allWeaknesses = metrics.weaknessesCorpus.join(' ');
         metrics.aggregatedSummary = `Strengths observed: ${allStrengths.substring(0, 200)}... Weaknesses observed: ${allWeaknesses.substring(0, 200)}...`;
         metrics.lastUpdated = Date.now();
-        this.subjectMetrics.set(mode, metrics);
+        data.subjectMetrics.set(mode, metrics);
     }
     /**
      * Gets session summary by session ID
      */
     async getSessionSummary(sessionId) {
-        await this.ensureInitialized();
-        return this.sessionSummaries.get(sessionId);
+        const data = await this.loadData();
+        return data.sessionSummaries.get(sessionId);
     }
     /**
      * Gets subject metrics for a mode
      */
     async getSubjectMetrics(mode) {
-        await this.ensureInitialized();
-        return this.subjectMetrics.get(mode);
+        const data = await this.loadData();
+        return data.subjectMetrics.get(mode);
     }
     /**
      * Gets all subject metrics
      */
     async getAllSubjectMetrics() {
-        await this.ensureInitialized();
+        const data = await this.loadData();
         const result = {};
         for (const mode of ['writing', 'coding', 'math']) {
-            const metrics = this.subjectMetrics.get(mode);
+            const metrics = data.subjectMetrics.get(mode);
             if (metrics) {
                 result[mode] = metrics;
             }
@@ -129,16 +123,16 @@ class InsightsStore {
      * Gets recent patterns (last 20)
      */
     async getRecentPatterns(limit = 20) {
-        await this.ensureInitialized();
-        return this.recentPatterns.slice(0, limit);
+        const data = await this.loadData();
+        return data.recentPatterns.slice(0, limit);
     }
     /**
      * Gets all session summaries
      */
     async getAllSessionSummaries() {
-        await this.ensureInitialized();
-        return Array.from(this.sessionSummaries.values());
+        const data = await this.loadData();
+        return Array.from(data.sessionSummaries.values());
     }
 }
 // Export singleton instance
-exports.insightsStore = new InsightsStore();
+export const insightsStore = new InsightsStore();

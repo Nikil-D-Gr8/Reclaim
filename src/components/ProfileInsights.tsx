@@ -20,6 +20,8 @@ const modeLabels = {
 };
 
 export function ProfileInsights({ summaries }: ProfileInsightsProps) {
+  console.log('🎯 PROFILE COMPONENT: ProfileInsights rendered!');
+
   const [insights, setInsights] = useState<ProfileSummary & { recentPatterns?: RecentPattern[] }>(summaries);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,44 +40,28 @@ export function ProfileInsights({ summaries }: ProfileInsightsProps) {
   };
 
   useEffect(() => {
+    console.log('🔄 KESTRA: ProfileInsights component mounted, fetching insights...');
+
     const initialize = async () => {
-      await checkForCompletedSessions();
       await fetchInsights();
     };
 
     initialize();
 
-    // Poll every 10 seconds for updates
+    // Refresh insights every 30 seconds to show any newly processed results
+    console.log('⏰ KESTRA: Setting up refresh interval (30 seconds)...');
     const interval = setInterval(() => {
-      checkForCompletedSessions();
+      console.log('🔄 KESTRA: Refreshing insights...');
       fetchInsights();
-    }, 10000);
-    return () => clearInterval(interval);
+    }, 30000);
+
+    return () => {
+      console.log('🛑 KESTRA: Clearing refresh interval');
+      clearInterval(interval);
+    };
   }, []);
 
-  const checkForCompletedSessions = async () => {
-    try {
-      // Get sessions that are currently being summarized
-      const summarizingData = await apiService.getSummarizingSessions();
 
-      // Process each summarizing session
-      for (const session of summarizingData.sessions) {
-        try {
-          const result = await apiService.processKestraResults(session.sessionId);
-          if (result.status === 'completed') {
-            console.log(`Processed completed session: ${session.sessionId}`);
-          }
-        } catch (err) {
-          console.error(`Failed to process session ${session.sessionId}:`, err);
-        }
-      }
-
-      // Refresh insights after processing
-      await fetchInsights();
-    } catch (err) {
-      console.error('Failed to check for completed sessions:', err);
-    }
-  };
 
   const { overallSummary, perMode, recentPatterns } = insights;
 
@@ -97,16 +83,24 @@ export function ProfileInsights({ summaries }: ProfileInsightsProps) {
 
         {/* Overall Summary */}
         <section className="bg-gray-50 rounded-lg p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
-            Overall Summary
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-gray-900">
+              Overall Summary
+            </h2>
+            {isLoading && (
+              <div className="flex items-center space-x-2 text-sm text-blue-600">
+                <RefreshCw className="w-4 h-4 animate-spin" />
+                <span>Processing summaries...</span>
+              </div>
+            )}
+          </div>
           {overallSummary ? (
             <p className="text-gray-700 leading-relaxed">{overallSummary}</p>
           ) : (
             <div className="text-center py-8">
               <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-500">
-                No learning summary available yet. Complete more sessions to generate insights!
+                {isLoading ? 'Generating your learning insights...' : 'No learning summary available yet. Complete more sessions to generate insights!'}
               </p>
             </div>
           )}
@@ -152,7 +146,6 @@ export function ProfileInsights({ summaries }: ProfileInsightsProps) {
             </h2>
             <button
               onClick={async () => {
-                await checkForCompletedSessions();
                 await fetchInsights();
               }}
               disabled={isLoading}

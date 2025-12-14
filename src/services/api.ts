@@ -1,5 +1,6 @@
 import type {
   Mode,
+  Session,
   StartSessionRequest,
   StartSessionResponse,
   SendMessageRequest,
@@ -116,6 +117,21 @@ export const apiService = {
     }
 
     return response.json();
+  },
+
+  // API for getting all sessions
+  async getAllSessions(): Promise<Session[]> {
+    const response = await fetch(`${API_BASE_URL}/session/all`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch all sessions');
+    }
+
+    const data = await response.json();
+    return data.sessions;
   },
 
   // API for getting sessions that are currently being summarized

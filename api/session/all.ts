@@ -7,24 +7,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    // Get sessions that are currently in summarizing state
-    const summarizingSessionIds = await sessionStore.getSessionsByStatus('summarizing');
-    const summarizingSessions = [];
+    // Get all active session IDs
+    const sessionIds = await sessionStore.getActiveSessions();
+    const sessions = [];
 
-    for (const sessionId of summarizingSessionIds) {
+    // Load each session
+    for (const sessionId of sessionIds) {
       const session = await sessionStore.getSession(sessionId);
       if (session) {
-        summarizingSessions.push({
-          sessionId,
-          mode: session.mode,
-          kestraExecutionId: session.kestraExecutionId,
-        });
+        sessions.push(session);
       }
     }
 
-    res.status(200).json({ sessions: summarizingSessions });
+    res.status(200).json({ sessions });
   } catch (error) {
-    console.error('Error fetching summarizing sessions:', error);
+    console.error('Error fetching all sessions:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 }
