@@ -99,7 +99,7 @@ async function processCompletedExecution(sessionId: string, webhookData: any) {
       });
 
       if (apiResponse.ok) {
-        const executionData = await apiResponse.json();
+        const executionData: any = await apiResponse.json();
         const geminiTaskFromApi = executionData.taskRunList?.find((task: any) => task.taskId === 'gemini_reflection');
 
         if (geminiTaskFromApi?.outputs?.body) {
