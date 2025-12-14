@@ -5,6 +5,16 @@ interface MessageProps {
   message: MessageType;
 }
 
+/**
+ * Render a chat message bubble that displays markdown-formatted content with role-based styling.
+ *
+ * The component aligns and styles the bubble based on the message's `role` (e.g., 'user' vs others)
+ * and renders `message.content` as Markdown with custom styling for code blocks/inline code,
+ * paragraphs, lists, blockquotes, and headings.
+ *
+ * @param message - The message object to display; its `role` controls alignment and bubble styling and its `content` is rendered as Markdown.
+ * @returns The React element representing the styled chat message bubble.
+ */
 export function Message({ message }: MessageProps) {
   const isUser = message.role === 'user';
 
