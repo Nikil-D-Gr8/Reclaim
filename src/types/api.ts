@@ -13,6 +13,8 @@ export interface Session {
   messages: Message[];
   createdAt: number;
   updatedAt: number;
+  status?: 'active' | 'summarizing' | 'completed';
+  kestraExecutionId?: string;
 }
 
 export interface StartSessionRequest {
@@ -49,6 +51,7 @@ export interface ProfileSummary {
     math?: string;
   };
   lastUpdated?: number;
+  recentPatterns?: RecentPattern[];
 }
 
 export interface GetProfileSummaryResponse {
@@ -68,4 +71,29 @@ export interface EndSessionRequest {
 
 export interface EndSessionResponse {
   success: boolean;
+}
+
+// Kestra and Insights types
+export interface SessionSummary {
+  sessionId: string;
+  mode: Mode;
+  patternsObserved: string;
+  strengths: string;
+  weaknesses: string;
+  createdAt: number;
+}
+
+export interface SubjectMetrics {
+  mode: Mode;
+  strengthsCorpus: string[];
+  weaknessesCorpus: string[];
+  aggregatedSummary: string;
+  lastUpdated: number;
+}
+
+export interface RecentPattern {
+  sessionId: string;
+  mode: Mode;
+  pattern: string;
+  createdAt: number;
 }

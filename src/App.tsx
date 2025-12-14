@@ -27,11 +27,14 @@ function App() {
     sessions,
     messages,
     isLoading,
+    isEndingSession,
     error,
     startNewSession,
     selectPreviousSession,
     deleteSession,
     sendMessage,
+    endSession,
+    canEndSession,
   } = useChat();
 
   const handleSelectProfile = () => {
@@ -101,7 +104,13 @@ function App() {
           ) : (
             <>
               <ChatArea messages={messages} isLoading={isLoading} />
-              <MessageInput onSendMessage={sendMessage} disabled={isLoading} />
+              <MessageInput
+                onSendMessage={sendMessage}
+                onEndSession={endSession}
+                disabled={isLoading}
+                canEndSession={canEndSession}
+                isEndingSession={isEndingSession}
+              />
             </>
           )}
         </main>

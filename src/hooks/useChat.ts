@@ -11,6 +11,7 @@ export function useChat() {
     math: [],
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isEndingSession, setIsEndingSession] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const currentSession =
@@ -110,16 +111,53 @@ export function useChat() {
     [currentSession, selectedMode]
   );
 
+  const endSession = useCallback(async () => {
+    if (!currentSession || !selectedMode) {
+      setError('No active session');
+      return;
+    }
+
+    try {
+      setIsEndingSession(true);
+      setError(null);
+
+      await apiService.endSession(currentSession.id, selectedMode);
+
+      // Update session status to indicate it's ended
+      setSessions((prev) => ({
+        ...prev,
+        [selectedMode]: prev[selectedMode].map((s) =>
+          s.id === currentSession.id
+            ? {
+                ...s,
+                status: 'summarizing' as const,
+                updatedAt: Date.now(),
+              }
+            : s
+        ),
+      }));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to end session');
+    } finally {
+      setIsEndingSession(false);
+    }
+  }, [currentSession, selectedMode]);
+
+  const canEndSession = messages.length > 0 && !isLoading && !isEndingSession && currentSession?.status !== 'summarizing' && currentSession?.status !== 'completed';
+
   return {
     selectedMode,
     currentSessionId,
     sessions,
     messages,
     isLoading,
+    isEndingSession,
     error,
     startNewSession,
     selectPreviousSession,
     deleteSession,
     sendMessage,
+    endSession,
+    canEndSession,
   };
 }

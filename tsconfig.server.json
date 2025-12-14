@@ -11,11 +11,12 @@
     "forceConsistentCasingInFileNames": true,
     "declaration": false,
     "outDir": "dist/server",
-    "rootDir": "server",
+    "rootDir": ".",
     "resolveJsonModule": true
   },
   "include": [
-    "server/**/*"
+    "server/**/*",
+    "src/types/**/*"
   ],
   "exclude": [
     "node_modules",

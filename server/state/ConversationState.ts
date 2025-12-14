@@ -29,6 +29,8 @@ export interface ConversationState {
   lastIntent?: Intent;
   phase: Phase;
   summary?: string; // Optional, future Kestra output
+  status?: 'active' | 'summarizing' | 'completed';
+  kestraExecutionId?: string;
 }
 
 /**

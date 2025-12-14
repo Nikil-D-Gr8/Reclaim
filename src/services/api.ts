@@ -88,4 +88,47 @@ export const apiService = {
 
     return response.json();
   },
+
+  // API for processing Kestra results
+  async processKestraResults(sessionId: string): Promise<{ status: 'processing' | 'completed', sessionSummary?: any }> {
+    const response = await fetch(`${API_BASE_URL}/session/process-kestra`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to process Kestra results');
+    }
+
+    return response.json();
+  },
+
+  // API for getting profile insights
+  async getProfileInsights(): Promise<any> {
+    const response = await fetch(`${API_BASE_URL}/profile/insights`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch profile insights');
+    }
+
+    return response.json();
+  },
+
+  // API for getting sessions that are currently being summarized
+  async getSummarizingSessions(): Promise<{ sessions: Array<{ sessionId: string, mode: string, kestraExecutionId?: string }> }> {
+    const response = await fetch(`${API_BASE_URL}/session/summarizing`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch summarizing sessions');
+    }
+
+    return response.json();
+  },
 };
